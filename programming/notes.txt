@@ -1,0 +1,38 @@
+// esp32 code
+
+#include <Wire.h>
+
+void setup() {
+  Wire.begin(); // Initialize I2C bus
+  Serial.begin(115200); // Initialize Serial communication for debugging
+}
+
+void loop() {
+  Wire.beginTransmission(8); // Address of the slave device (Arduino) is 8
+  Wire.write("Hello from ESP32!"); // Data to be sent
+  Wire.endTransmission(); // Finish the transmission
+
+  delay(1000); // Wait for a second before sending again
+}
+
+
+// arduino code
+#include <Wire.h>
+
+void setup() {
+  Wire.begin(8);                // Address of the Arduino is 8
+  Wire.onReceive(receiveEvent); // Callback function for receiving data
+  Serial.begin(115200);         // Initialize Serial communication for debugging
+}
+
+void loop() {
+  delay(100); // Allow for some delay in the loop
+}
+
+void receiveEvent(int bytes) {
+  while (Wire.available()) { // While data is available to read
+    char c = Wire.read();    // Read the received byte
+    Serial.print(c);          // Print the received byte
+  }
+}
+
