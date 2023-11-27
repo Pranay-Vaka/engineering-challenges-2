@@ -1,38 +1,58 @@
-// esp32 code
+title: ttgo display code for one way communication from the ttgo to the arduino
 
 #include <Wire.h>
 
+#define NUCLEO_ADDRESS 9 // Change this to the address of your Nucleo-64 (Arduino) slave
+
 void setup() {
-  Wire.begin(); // Initialize I2C bus
-  Serial.begin(115200); // Initialize Serial communication for debugging
+  Serial.begin(115200);
+  Wire.begin();
 }
 
 void loop() {
-  Wire.beginTransmission(8); // Address of the slave device (Arduino) is 8
-  Wire.write("Hello from ESP32!"); // Data to be sent
-  Wire.endTransmission(); // Finish the transmission
+  String message = "lmao"; // Message to be sent
 
-  delay(1000); // Wait for a second before sending again
-}
+  Wire.beginTransmission(NUCLEO_ADDRESS);
+  Wire.write((const uint8_t*)message.c_str(), message.length()); // Cast and send the string as bytes
+  byte error = Wire.endTransmission();
 
-
-// arduino code
-#include <Wire.h>
-
-void setup() {
-  Wire.begin(8);                // Address of the Arduino is 8
-  Wire.onReceive(receiveEvent); // Callback function for receiving data
-  Serial.begin(115200);         // Initialize Serial communication for debugging
-}
-
-void loop() {
-  delay(100); // Allow for some delay in the loop
-}
-
-void receiveEvent(int bytes) {
-  while (Wire.available()) { // While data is available to read
-    char c = Wire.read();    // Read the received byte
-    Serial.print(c);          // Print the received byte
+  if (error == 0) {
+    Serial.println("Nucleo is connected!");
+  } else {
+    Serial.println("Nucleo is not connected!");
   }
+
+  delay(1000);
+}
+
+
+title: arduino display code for one way communication from the ttgo to the arduino
+
+#include <Wire.h>
+
+#define MY_ADDRESS 9 // Address of the Nucleo-64 (Arduino) slave
+#define MAX_STRING_LENGTH 32 // Maximum expected string length
+
+char receivedString[MAX_STRING_LENGTH];
+
+void setup() {
+  Wire.begin(MY_ADDRESS); // Set up I2C communication with the specified address
+  Wire.onReceive(receiveEvent); // Function to handle incoming data
+  Serial.begin(9600);
+}
+
+void loop() {
+  delay(100);
+}
+
+void receiveEvent(int bytesReceived) {
+  int i = 0;
+  while (Wire.available() > 0 && i < MAX_STRING_LENGTH - 1) {
+    receivedString[i] = Wire.read(); // Read each byte of the received string
+    i++;
+  }
+  receivedString[i] = '\0'; // Null-terminate the string
+  Serial.print("Received message: ");
+  Serial.println(receivedString);
 }
 

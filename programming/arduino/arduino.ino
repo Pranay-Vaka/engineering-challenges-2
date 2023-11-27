@@ -1,18 +1,27 @@
 #include <Wire.h>
 
+#define TTGO_ADDRESS 8 // Address of the TTGO ESP32 slave
+
+char receivedString[32] = "Hello, TTGO!"; // Initial message to be sent from Arduino
+
 void setup() {
-  Wire.begin(8);                // Address of the Arduino is 8
-  Wire.onReceive(receiveEvent); // Callback function for receiving data
-  Serial.begin(115200);         // Initialize Serial communication for debugging
+  Wire.begin(TTGO_ADDRESS); // Set up I2C communication with the specified address
+  Wire.onRequest(sendData); // Function to handle data requests
+  Serial.begin(9600);
 }
 
 void loop() {
-  delay(100); // Allow for some delay in the loop
+  // Receive data from TTGO
+  Wire.requestFrom(TTGO_ADDRESS, 32); // Request data from TTGO
+  while (Wire.available()) {
+    char receivedChar = Wire.read();
+    Serial.print("Received from TTGO: ");
+    Serial.println(receivedChar);
+  }
+
+  delay(1000);
 }
 
-void receiveEvent(int bytes) {
-  while (Wire.available()) { // While data is available to read
-    char c = Wire.read();    // Read the received byte
-    Serial.print(c);          // Print the received byte
-  }
+void sendData() {
+  Wire.write((const uint8_t*)receivedString, strlen(receivedString)); // Send data to TTGO
 }
