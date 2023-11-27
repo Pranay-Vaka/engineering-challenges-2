@@ -1,27 +1,28 @@
 #include <Wire.h>
 
-#define TTGO_ADDRESS 8 // Address of the TTGO ESP32 slave
+#define MY_ADDRESS 9 // Address of the Nucleo-64 (Arduino) slave
+#define MAX_STRING_LENGTH 32 // Maximum expected string length
 
-char receivedString[32] = "Hello, TTGO!"; // Initial message to be sent from Arduino
+char receivedString[MAX_STRING_LENGTH];
 
 void setup() {
-  Wire.begin(TTGO_ADDRESS); // Set up I2C communication with the specified address
-  Wire.onRequest(sendData); // Function to handle data requests
+  Wire.begin(MY_ADDRESS); // Set up I2C communication with the specified address
+  Wire.onReceive(receiveEvent); // Function to handle incoming data
   Serial.begin(9600);
 }
 
 void loop() {
-  // Receive data from TTGO
-  Wire.requestFrom(TTGO_ADDRESS, 32); // Request data from TTGO
-  while (Wire.available()) {
-    char receivedChar = Wire.read();
-    Serial.print("Received from TTGO: ");
-    Serial.println(receivedChar);
+  delay(100);
+}
+
+void receiveEvent(int bytesReceived) {
+  int i = 0;
+  while (Wire.available() > 0 && i < MAX_STRING_LENGTH - 1) {
+    receivedString[i] = Wire.read(); // Read each byte of the received string
+    i++;
   }
-
-  delay(1000);
+  receivedString[i] = '\0'; // Null-terminate the string
+  Serial.print("Received message: ");
+  Serial.println(receivedString);
 }
 
-void sendData() {
-  Wire.write((const uint8_t*)receivedString, strlen(receivedString)); // Send data to TTGO
-}

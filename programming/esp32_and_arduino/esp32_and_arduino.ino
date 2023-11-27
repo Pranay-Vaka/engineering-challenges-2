@@ -1,6 +1,6 @@
 #include <Wire.h>
 
-#define ARDUINO_ADDRESS 9 // Change this to the address of your Arduino (Nucleo-64) slave
+#define NUCLEO_ADDRESS 9 // Change this to the address of your Nucleo-64 (Arduino) slave
 
 void setup() {
   Serial.begin(115200);
@@ -8,26 +8,19 @@ void setup() {
 }
 
 void loop() {
-  String messageFromTTGO = "Hello, Arduino!"; // Message to be sent from TTGO
+  String message = "lmao"; // Message to be sent
 
-  // Send data from TTGO to Arduino
-  Wire.beginTransmission(ARDUINO_ADDRESS);
-  Wire.write((const uint8_t*)messageFromTTGO.c_str(), messageFromTTGO.length());
-  byte error1 = Wire.endTransmission();
+  Wire.beginTransmission(NUCLEO_ADDRESS);
+  Wire.write((const uint8_t*)message.c_str(), message.length()); // Cast and send the string as bytes
+  byte error = Wire.endTransmission();
 
-  if (error1 == 0) {
-    Serial.println("TTGO to Arduino: Message sent!");
+  if (error == 0) {
+    Serial.println("Nucleo is connected!");
   } else {
-    Serial.println("TTGO to Arduino: Transmission error!");
-  }
-
-  // Receive data from Arduino
-  Wire.requestFrom(ARDUINO_ADDRESS, 32); // Request data from Arduino
-  while (Wire.available()) {
-    char receivedChar = Wire.read();
-    Serial.print("Received from Arduino: ");
-    Serial.println(receivedChar);
+    Serial.println("Nucleo is not connected!");
   }
 
   delay(1000);
 }
+
+
